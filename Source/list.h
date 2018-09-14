@@ -1,5 +1,5 @@
 /* list.h 
- *
+ * Harsh Patel 2017
  * Public functions for two-way linked list
  *
  * You should not need to change anything in this file.  If you do you
