@@ -2,7 +2,15 @@
 
 This project includes a thread library to create and manage user threads
 
-DESIGN
+Usage
+-------
+To create the library
+> make
+
+Then to use the library, compile your program with the library
+> gcc myfile.c mythreadslib.a
+
+Design
 -------
 The basic design for managing thread is based on using queues/lists to hold a thread_t data stucture 
 which keeps track of a thread_id and its context. The queues were made by using the list.c implementation
