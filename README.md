@@ -1,22 +1,11 @@
-Harsh Patel
+# Simple Thread Library
 
 This project includes a thread library to create and manage user threads
-
-KNOWN PROBLEMS
---------------
-* There are some issues with preemptive testing. Although the autograder said it was fine, 
-  My own tests showed that with a 10us timer, the preemptive tests are not very successful in 
-  completeing. I just used a modified file of an example from your git, 
-  so perhaps my test driver is faulty. 
-
-* Other than that, I've checked cooperative mode with and without locks/condition variables
-  both with 10 up to 100000 threads. These worked as expected
 
 DESIGN
 -------
 The basic design for managing thread is based on using queues/lists to hold a thread_t data stucture 
 which keeps track of a thread_id and its context. The queues were made by using the list.c implementation
-from last semester's ECE 2230 class with Dr. Russell. I used this becuase I know the list is bug free.
 The list was implemented into a queue using the datatypes.h file which contains the thread_t structure, 
 and the thread_support.c file which contains functions specifically for managing a list/queue of threads.
 
