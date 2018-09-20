@@ -1,3 +1,8 @@
+/*
+* Harsh Patel
+* Spring 2017
+*/
+
 void __attribute__ ((destructor)) cleanup(void);
 
 #include <ucontext.h>
@@ -66,7 +71,7 @@ void threadInit(){
    queue_thread(activeThreads, master);
    nextId = 1; // main is zero
    con = NULL;
-   
+
    // cleanup thread
    con = (ucontext_t*)malloc(sizeof(ucontext_t));
    cleaner = build_thread(nextId++, con);
@@ -74,9 +79,9 @@ void threadInit(){
    con->uc_stack.ss_sp =malloc(STACK_SIZE);
    con->uc_stack.ss_size = STACK_SIZE;
    makecontext(con, release, 0);
-   queue_thread(activeThreads, cleaner); 
+   queue_thread(activeThreads, cleaner);
    con = NULL;
-  
+
    returnVals = (void**)calloc(UNIT_SIZE, sizeof(void*));
    interruptEnable();
 }
@@ -86,20 +91,20 @@ void threadInit(){
 static void thread_func(thFuncPtr fptr, void* args){
    threadExit(fptr(args));
 }
-   
+
 
 // schedule all active threads
 static void scheduleThreads(){
    // user threads waiting to run but not scheduled
    queue_thread(scheduler, master);
-   if(num_threads(activeThreads) > LIB_THREADS){ 
+   if(num_threads(activeThreads) > LIB_THREADS){
       int i;
       for(i = LIB_THREADS; i < num_threads(activeThreads); i++){
          queue_thread(scheduler, access_thread(activeThreads, i));
       }
    }
 }
-   
+
 
 // create new thread and run it
 // returns a unique thread id for the thread
@@ -118,7 +123,7 @@ int threadCreate ( thFuncPtr funcPtr , void * argPtr ){
    if(num_threads(scheduler) == 0){
       scheduleThreads();
    }
-   
+
    int ret = nextId-1;
    ucontext_t* old = running->context;
    running = new;
@@ -127,14 +132,14 @@ int threadCreate ( thFuncPtr funcPtr , void * argPtr ){
       int newSize = nextId / UNIT_SIZE;
       newSize++;
       newSize *= UNIT_SIZE;
-      returnVals = (void**)realloc(returnVals, newSize * sizeof(void*)); 
-   }  
+      returnVals = (void**)realloc(returnVals, newSize * sizeof(void*));
+   }
 
    interruptEnable();
-   
+
    swapcontext(old, con);
 
-   
+
    interruptDisable();
 
    con = NULL;
@@ -144,7 +149,7 @@ int threadCreate ( thFuncPtr funcPtr , void * argPtr ){
 
 // calling thread is halted and swapped with another thread
 void threadYield (){
-   
+
    interruptDisable();
 
    if(nextId <= LIB_THREADS || num_threads(activeThreads) == LIB_THREADS){
@@ -155,24 +160,24 @@ void threadYield (){
    if(num_threads(scheduler) == 0){
       scheduleThreads();
    }
-   
+
    ucontext_t *old, *new;
    old = running->context;
    running = fetch_thread(scheduler, NEXT_THREAD); // pop next thread from queue
    new = running->context;
- 
+
    interruptEnable();
    swapcontext(old, new);
-   
+
 }
 
 
-// wait for thread with id provided 
+// wait for thread with id provided
 void threadJoin ( int thread_id , void ** result ){
-   
+
    interruptDisable();
-     
-   while( thread_done(blockedThreads, thread_id) && !thread_done(activeThreads, thread_id) ){ 
+
+   while( thread_done(blockedThreads, thread_id) && !thread_done(activeThreads, thread_id) ){
       interruptEnable();
       threadYield();
       interruptDisable();
@@ -180,15 +185,15 @@ void threadJoin ( int thread_id , void ** result ){
 
    if(result != NULL)
       *result = returnVals[thread_id];
-   
+
    interruptEnable();
-   
+
 }
 
 
 // end current thread
 void threadExit ( void * result ){
-  
+
    interruptDisable();
    if(running == master){
       exit(1);
@@ -210,7 +215,7 @@ static void release(){
 
    if(num_threads(scheduler) == 0)
       scheduleThreads();
-  
+
    running = fetch_thread(scheduler, NEXT_THREAD);
 
    interruptEnable(); // continue from threadExit
@@ -221,7 +226,7 @@ static void release(){
 
 // lock the specified lock
 void threadLock ( int lockNum ){
-  
+
    interruptDisable();
    while(locks[lockNum] != UNLOCKED){
       interruptEnable();
@@ -235,7 +240,7 @@ void threadLock ( int lockNum ){
 
 // unlock specified lock
 void threadUnlock ( int lockNum ){
-   
+
    interruptDisable();
    if(locks[lockNum] != UNLOCKED){
       assert(locks[lockNum] == running->thread_id);
@@ -247,16 +252,16 @@ void threadUnlock ( int lockNum ){
 
 // wait on the specified condition variable of the specified lock
 void threadWait ( int lockNum , int conditionNum ){
-  
+
    interruptDisable();
    if(locks[lockNum] == UNLOCKED || locks[lockNum] != running->thread_id){
       printf("\n Fatal Error!! Calling threadWait without owning Lock!\n");
       exit(-1);
    }
-   
+
    interruptEnable();
    threadUnlock(lockNum);
-   
+
    interruptDisable();
 
    queue_thread(cond_vars[lockNum][conditionNum], running);
@@ -267,13 +272,13 @@ void threadWait ( int lockNum , int conditionNum ){
       fetch_thread(scheduler, running->thread_id);
    }
 
-   
+
    thread_t* blocked = running;
    if(num_threads(scheduler) == 0)
       scheduleThreads();
-   
+
    running = fetch_thread(scheduler, NEXT_THREAD);
-   
+
    interruptEnable();
    swapcontext(blocked->context, running->context);
    threadLock(lockNum); // reaquire lock
@@ -282,19 +287,19 @@ void threadWait ( int lockNum , int conditionNum ){
 
 // signal the specified condition variable and run a thread waiting there
 void threadSignal ( int lockNum , int conditionNum ){
-  
+
    interruptDisable();
    if(num_threads(cond_vars[lockNum][conditionNum]) == 0){
       interruptEnable();
       return;
    }
-   
+
    thread_t* signaled = running;
    queue_thread(scheduler, signaled);
    running = fetch_thread(cond_vars[lockNum][conditionNum], NEXT_THREAD);
    fetch_thread(blockedThreads, running->thread_id); // remove from blocked list
    queue_thread(activeThreads, running); // thread is unblocked and ready to queue
- 
+
    interruptEnable();
    swapcontext(signaled->context, running->context);
 }
@@ -318,7 +323,7 @@ void cleanup(void){
 
    // free locks
    free(locks);
-   
+
    // free cond variables
    int i, j;
    for(i = 0; i < NUM_LOCKS; i++){
@@ -329,7 +334,7 @@ void cleanup(void){
       free(cond_vars[i]);
    }
    free(cond_vars);
-   
+
    // empty scheduler and blockedThreads
    empty_list(scheduler);
    empty_list(blockedThreads);
@@ -337,7 +342,7 @@ void cleanup(void){
    // free the thread memory
    ucontext_t* con;
    free(delete_thread(fetch_thread(activeThreads, NEXT_THREAD))); // free master
-      
+
    while(num_threads(activeThreads) != 0){
       con = delete_thread(fetch_thread(activeThreads, NEXT_THREAD));
       free(con->uc_stack.ss_sp);
@@ -351,5 +356,5 @@ void cleanup(void){
    destroy_list(activeThreads);
    destroy_list(scheduler);
    destroy_list(blockedThreads);
-       
+
 }

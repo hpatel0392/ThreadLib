@@ -1,3 +1,8 @@
+/*
+* Harsh Patel
+* Spring 2017
+*/
+
 #ifndef MYTHREADS_H
 #define MYTHREADS_H
 

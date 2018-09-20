@@ -9,8 +9,8 @@
 #include <ucontext.h>
 
 typedef struct thread_tag {
-    int thread_id;      
-    ucontext_t * context;    
+    int thread_id;
+    ucontext_t * context;
 } thread_t;
 
 /* the list ADT works on socket data of this type */

@@ -1,3 +1,8 @@
+/*
+* Harsh Patel
+* Spring 2017
+*/
+
 #ifndef THREAD_SUPPORT_H
 #define THREAD_SUPPORT_H
 

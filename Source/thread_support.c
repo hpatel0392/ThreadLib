@@ -1,3 +1,8 @@
+/*
+* Harsh Patel
+* Spring 2017
+*/
+
 #include <stdlib.h>
 #include <assert.h>
 
@@ -54,7 +59,7 @@ void queue_thread(list_t* list_ptr, thread_t* t){
 * meant to be used with activeThreads
 * return 1 means thread not in list and 0 means it is
 * this is done like this because other list functions depend on output format
-*/ 
+*/
 int thread_done(list_t* list_ptr, int tid){
    if(list_entries(list_ptr) == 0)
       return 1;
@@ -64,10 +69,10 @@ int thread_done(list_t* list_ptr, int tid){
    to_find.thread_id = tid;
    if(list_elem_find(list_ptr, &to_find, &pos) == NULL)
       return 1;
-   return 0;   
+   return 0;
 }
 
-// fetches next runnable thread 
+// fetches next runnable thread
 thread_t* fetch_thread(list_t* list_ptr, int tid){
    if(tid == NEXT_THREAD)
       return list_remove(list_ptr, LISTPOS_HEAD);
@@ -77,7 +82,7 @@ thread_t* fetch_thread(list_t* list_ptr, int tid){
       to_find.thread_id = tid;
       list_elem_find(list_ptr, &to_find, &pos);
       return list_remove(list_ptr, pos);
-   }    
+   }
 }
 
 // return a thread at the INDEX provided
@@ -91,7 +96,7 @@ ucontext_t* delete_thread(thread_t* t){
    ucontext_t* ret = t->context;
    t->context = NULL;
    free(t);
-   return ret;      
+   return ret;
 }
 
 // build a thread from a context which is already instantiated
