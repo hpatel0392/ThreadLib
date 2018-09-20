@@ -2,7 +2,7 @@ CC=gcc -Wall -g
 C=clang -g -Wall -o
 files=list.c thread_support.c mythreads.c
 hfiles=list.h thread_support.h mythreads.h datatypes.h
-lib=libmythreads.a
+lib=mythreadslib.a
 
 project2: $(files)
 	$(CC) -c $(files)
